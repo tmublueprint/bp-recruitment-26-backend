@@ -7,6 +7,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,4 +51,44 @@ jobs:
           done
 
       - name: Run tests
-        run: python test.py
+        id: tests
+        run: |
+          python test.py 2>&1 | tee /tmp/test_output.txt
+          exit ${PIPESTATUS[0]}
+
+      - name: Report score
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('/tmp/test_output.txt', 'utf8');
+
+            // Try to extract a score pattern like "X/Y" or "X passed" or "Score: X"
+            const scoreMatch = output.match(/(\d+)\s*\/\s*(\d+)|(\d+)\s+passed|Score[:\s]*(\d+%?)/i);
+            const score = scoreMatch ? scoreMatch[0] : 'see details';
+            const failed = /FAIL|✗|failed|ERROR|Traceback/i.test(output);
+            const conclusion = failed ? 'failure' : 'success';
+
+            const sha = context.payload.pull_request.head.sha;
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: '🧪 Test Score',
+              head_sha: sha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title: `Score: ${score}`,
+                summary: '```\n' + output.slice(-2000) + '\n```',
+                text: output
+              }
+            });
+
+      - name: Display score in job summary
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/test_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
