@@ -157,9 +157,16 @@ curl -X PATCH http://localhost:3000/orders/1 \
 
 1. Commit and push your changes to your fork
 2. Open a pull request back to this repo
-3. Check the **Checks** tab on your PR to see your test score
+3. Look at the **Checks** tab on your PR — a **"🧪 Test Score"** check will show your score
+4. The score is also summarized in the **Action Summary** at the bottom of the workflow run
 
 The full test suite runs automatically — don't report your score manually.
+
+---
+
+**Note:** The test score is computed from the output of the private test suite. A passing score means all tests passed. If any test fails, you'll see which ones in the check details.
+
+---
 
 ## What we're looking for
 

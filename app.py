@@ -49,5 +49,5 @@ class OrderHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     server = HTTPServer(("0.0.0.0", 3000), OrderHandler)
-    print("Listening on port 3000")  # test change
+    print("Listening on port 3000")
     server.serve_forever()
