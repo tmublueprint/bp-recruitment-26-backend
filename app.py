@@ -32,7 +32,6 @@ def get_db():
 class OrderHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
-        # POST /orders — create a new orde
         pass
 
     def do_GET(self):
